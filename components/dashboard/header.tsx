@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Search, Moon, Sun } from "lucide-react"
+import { Bell, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -12,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useTheme } from "next-themes"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -26,7 +25,6 @@ interface User {
 }
 
 export function Header() {
-  const { theme, setTheme } = useTheme()
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
 
@@ -60,19 +58,6 @@ export function Header() {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        {/* Theme toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
-          {theme === "dark" ? (
-            <Sun className="h-5 w-5" />
-          ) : (
-            <Moon className="h-5 w-5" />
-          )}
-        </Button>
-
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
