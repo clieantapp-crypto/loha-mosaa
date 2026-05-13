@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
+import { ThemeProvider } from 'next-themes'
 import './globals.css'
 
-
 export const metadata: Metadata = {
-  title: 'نظام الإشعارات',
-  description: 'نظام إدارة الإشعارات',
+  title: 'لوحة التحكم',
+  description: 'لوحة تحكم لإدارة المستخدمين والإشعارات',
 }
 
 export default function RootLayout({
@@ -13,9 +13,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ar" dir="rtl">
-      <body>{children}</body>
+    <html lang="ar" dir="rtl" suppressHydrationWarning className="bg-background">
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   )
 }
-
