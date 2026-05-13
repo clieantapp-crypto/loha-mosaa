@@ -13,7 +13,6 @@ import { Settings, User, Bell, Shield, Save, Loader2 } from "lucide-react"
 interface Profile {
   id: string
   full_name: string | null
-  phone: string | null
 }
 
 interface SettingsData {
@@ -70,7 +69,6 @@ export default function SettingsPage() {
       .from("profiles")
       .update({
         full_name: profile.full_name,
-        phone: profile.phone,
         updated_at: new Date().toISOString(),
       })
       .eq("id", profile.id)
@@ -125,29 +123,16 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">الاسم الكامل</Label>
-                <Input
-                  id="name"
-                  placeholder="أدخل اسمك"
-                  value={profile?.full_name || ""}
-                  onChange={(e) =>
-                    setProfile(profile ? { ...profile, full_name: e.target.value } : null)
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">رقم الهاتف</Label>
-                <Input
-                  id="phone"
-                  placeholder="أدخل رقم هاتفك"
-                  value={profile?.phone || ""}
-                  onChange={(e) =>
-                    setProfile(profile ? { ...profile, phone: e.target.value } : null)
-                  }
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="name">الاسم الكامل</Label>
+              <Input
+                id="name"
+                placeholder="أدخل اسمك"
+                value={profile?.full_name || ""}
+                onChange={(e) =>
+                  setProfile(profile ? { ...profile, full_name: e.target.value } : null)
+                }
+              />
             </div>
             <Button onClick={saveProfile} disabled={saving} className="gap-2">
               {saving ? (

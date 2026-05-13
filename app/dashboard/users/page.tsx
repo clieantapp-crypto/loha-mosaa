@@ -74,7 +74,6 @@ export default async function UsersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-right">المستخدم</TableHead>
-                  <TableHead className="text-right">الهاتف</TableHead>
                   <TableHead className="text-right">الدور</TableHead>
                   <TableHead className="text-right">تاريخ التسجيل</TableHead>
                   <TableHead className="text-right">الإجراءات</TableHead>
@@ -84,7 +83,6 @@ export default async function UsersPage() {
                 {users.map((user: {
                   id: string
                   full_name: string | null
-                  phone: string | null
                   avatar_url: string | null
                   role: string
                   created_at: string
@@ -103,7 +101,6 @@ export default async function UsersPage() {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>{user.phone || "-"}</TableCell>
                     <TableCell>
                       <Badge
                         variant={user.role === "admin" ? "default" : "secondary"}

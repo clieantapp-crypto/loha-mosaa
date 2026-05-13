@@ -149,7 +149,6 @@ export default async function DashboardPage() {
                 recentUsers.map((user: {
                   id: string
                   full_name: string | null
-                  phone: string | null
                   created_at: string
                 }) => (
                   <div
@@ -162,9 +161,6 @@ export default async function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm">
                         {user.full_name || "مستخدم جديد"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {user.phone || "لا يوجد رقم"}
                       </p>
                     </div>
                     <span className="text-xs text-muted-foreground">
