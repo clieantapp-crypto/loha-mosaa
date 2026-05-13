@@ -40,13 +40,10 @@ export default function SignUpPage() {
     }
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
       options: {
-        emailRedirectTo:
-          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
-          `${window.location.origin}/auth/callback`,
         data: {
           full_name: formData.fullName,
         },
@@ -59,7 +56,13 @@ export default function SignUpPage() {
       return
     }
 
-    router.push("/auth/sign-up-success")
+    // إذا تم التسجيل بنجاح، توجه مباشرة للوحة التحكم
+    if (data.session) {
+      router.push("/dashboard")
+    } else {
+      // إذا كان يحتاج تأكيد بريد، توجه لصفحة النجاح
+      router.push("/auth/sign-up-success")
+    }
   }
 
   return (
