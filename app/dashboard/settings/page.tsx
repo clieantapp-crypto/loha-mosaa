@@ -30,6 +30,14 @@ export default function SettingsPage() {
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [savingPassword, setSavingPassword] = useState(false)
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+  const [passwordError, setPasswordError] = useState("")
+  const [passwordSuccess, setPasswordSuccess] = useState("")
 
   useEffect(() => {
     fetchData()
@@ -74,6 +82,41 @@ export default function SettingsPage() {
       .eq("id", profile.id)
 
     setSaving(false)
+  }
+
+  const changePassword = async () => {
+    setPasswordError("")
+    setPasswordSuccess("")
+
+    if (passwordData.newPassword.length < 8) {
+      setPasswordError("كلمة المرور يجب أن تكون 8 أحرف على الأقل")
+      return
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("كلمة المرور الجديدة غير متطابقة")
+      return
+    }
+
+    setSavingPassword(true)
+    const supabase = createClient()
+
+    const { error } = await supabase.auth.updateUser({
+      password: passwordData.newPassword,
+    })
+
+    if (error) {
+      setPasswordError(error.message)
+    } else {
+      setPasswordSuccess("تم تغيير كلمة المرور بنجاح")
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      })
+    }
+
+    setSavingPassword(false)
   }
 
   const updateSettings = async (key: keyof SettingsData, value: boolean) => {
@@ -209,14 +252,55 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              الأمان
+              تغيير كلمة المرور
             </CardTitle>
             <CardDescription>
-              إعدادات الأمان وكلمة المرور
+              قم بتحديث كلمة المرور الخاصة بك
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button variant="outline">تغيير كلمة المرور</Button>
+          <CardContent className="space-y-4">
+            {passwordError && (
+              <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-lg">
+                {passwordError}
+              </div>
+            )}
+            {passwordSuccess && (
+              <div className="p-3 text-sm text-green-500 bg-green-500/10 rounded-lg">
+                {passwordSuccess}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">كلمة المرور الجديدة</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                placeholder="أدخل كلمة المرور الجديدة"
+                value={passwordData.newPassword}
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, newPassword: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">تأكيد كلمة المرور</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="أعد إدخال كلمة المرور الجديدة"
+                value={passwordData.confirmPassword}
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                }
+              />
+            </div>
+            <Button onClick={changePassword} disabled={savingPassword} className="gap-2">
+              {savingPassword ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Shield className="h-4 w-4" />
+              )}
+              تغيير كلمة المرور
+            </Button>
           </CardContent>
         </Card>
       </div>
